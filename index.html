@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calculadora inteligente para optimizar el uso de tus tarjetas Chase">
+    <meta name="theme-color" content="#003D82">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chase Cards">
+    
+    <title>Calculadora de Tarjetas Chase</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #003D82 0%, #0066CC 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #003D82 0%, #0052A3 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .install-prompt {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .install-prompt.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .install-btn {
+            background: white;
+            color: #003D82;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #003D82;
+            font-size: 1.1em;
+        }
+        
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #0066CC;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #0066CC 0%, #003D82 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 204, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .card-recommendation {
+            background: linear-gradient(135deg, #E6F2FF 0%, #F0F8FF 100%);
+            border-left: 5px solid #0066CC;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .card-name {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #003D82;
+            margin-bottom: 10px;
+        }
+        
+        .card-number {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .recommendation-reason {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .float-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #0066CC;
+            margin-top: 15px;
+        }
+        
+        .float-days {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00AA00;
+            display: inline-block;
+        }
+        
+        .warning {
+            background: linear-gradient(135deg, #FFE6E6 0%, #FFF0F0 100%);
+            border-left: 5px solid #CC0000;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        
+        .warning-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #CC0000;
+            margin-bottom: 10px;
+        }
+        
+        .alternatives {
+            background: #F8F9FA;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .alternatives h3 {
+            color: #003D82;
+            margin-bottom: 15px;
+        }
+        
+        .alt-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .alt-card-name {
+            font-weight: bold;
+            color: #0066CC;
+            margin-bottom: 5px;
+        }
+        
+        .emoji {
+            font-size: 1.3em;
+            margin-right: 8px;
+        }
+        
+        .info-box {
+            background: #FFF9E6;
+            border-left: 4px solid #FFAA00;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .quick-access {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-btn {
+            background: white;
+            border: 2px solid #0066CC;
+            color: #0066CC;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-btn:hover {
+            background: #0066CC;
+            color: white;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .card-name {
+                font-size: 1.4em;
+            }
+            
+            .input-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💳 Calculadora de Tarjetas Chase</h1>
+            <p>Descubre cuál tarjeta usar para maximizar tu float</p>
+            <div id="install-prompt" class="install-prompt">
+                <div>📱 Instala esta app en tu iPhone</div>
+                <button class="install-btn" id="install-button">Instalar</button>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="quick-access">
+                <button class="quick-btn" onclick="setDateToToday()">Hoy</button>
+                <button class="quick-btn" onclick="setDateToTomorrow()">Mañana</button>
+                <button class="quick-btn" onclick="setDateToNextWeek()">Próxima Semana</button>
+            </div>
+            
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="purchase-date">
+                        <span class="emoji">📅</span>¿Cuándo vas a hacer la compra?
+                    </label>
+                    <input type="date" id="purchase-date" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="amount">
+                        <span class="emoji">💵</span>Monto de la compra (opcional)
+                    </label>
+                    <input type="number" id="amount" placeholder="Ej: 500" min="0" step="0.01">
+                </div>
+                
+                <button class="btn" onclick="calculateBestCard()">
+                    ✨ Calcular Mejor Tarjeta
+                </button>
+            </div>
+            
+            <div id="result" class="result">
+                <!-- Results will be inserted here -->
+            </div>
+        </div>
+        
+        <div class="footer">
+            Guía personalizada para Pablo Barra | Enero 2026<br>
+            <small>Funciona sin conexión a internet</small>
+        </div>
+    </div>
+    
+    <script>
+        // PWA Installation
+        let deferredPrompt;
+        const installPrompt = document.getElementById('install-prompt');
+        const installButton = document.getElementById('install-button');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.classList.add('show');
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response: ${outcome}`);
+                deferredPrompt = null;
+                installPrompt.classList.remove('show');
+            }
+        });
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed'));
+        }
+
+        // Credit card data
+        const cards = {
+            freedomFlex: {
+                name: 'Chase Freedom Flex',
+                number: '5738',
+                closeDay: 7,
+                dueDay: 4,
+                cashback: '1.5%',
+                specialBonus: '5% en categorías rotativas'
+            },
+            amazonPrime: {
+                name: 'Amazon Prime Visa',
+                number: '6556',
+                closeDay: 2,
+                dueDay: 27,
+                cashback: '5% en Amazon',
+                specialBonus: '5% cashback en Amazon y Whole Foods'
+            },
+            sapphirePreferred: {
+                name: 'Chase Sapphire Preferred',
+                number: '8625',
+                closeDay: 21,
+                dueDay: 18,
+                cashback: '1x puntos',
+                specialBonus: '3x en restaurantes y viajes'
+            },
+            freedomUnlimited: {
+                name: 'Chase Freedom Unlimited',
+                number: '3214',
+                closeDay: 25,
+                dueDay: 22,
+                cashback: '1.5%',
+                specialBonus: '1.5% en todo'
+            }
+        };
+        
+        // Quick date setters
+        function setDateToToday() {
+            document.getElementById('purchase-date').valueAsDate = new Date();
+        }
+        
+        function setDateToTomorrow() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('purchase-date').valueAsDate = tomorrow;
+        }
+        
+        function setDateToNextWeek() {
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            document.getElementById('purchase-date').valueAsDate = nextWeek;
+        }
+        
+        function calculateBestCard() {
+            const dateInput = document.getElementById('purchase-date');
+            const amountInput = document.getElementById('amount');
+            
+            if (!dateInput.value) {
+                alert('Por favor selecciona una fecha');
+                return;
+            }
+            
+            const purchaseDate = new Date(dateInput.value + 'T00:00:00');
+            const dayOfMonth = purchaseDate.getDate();
+            const amount = amountInput.value ? parseFloat(amountInput.value) : null;
+            
+            const recommendation = getBestCardForDay(dayOfMonth, amount);
+            displayResult(recommendation, dayOfMonth, purchaseDate, amount);
+        }
+        
+        function getBestCardForDay(day, amount) {
+            // Critical days - avoid purchases
+            if (day === 2) {
+                return {
+                    type: 'critical',
+                    closingCard: cards.amazonPrime,
+                    alternatives: [cards.sapphirePreferred, cards.freedomUnlimited, cards.freedomFlex]
+                };
+            }
+            if (day === 7) {
+                return {
+                    type: 'critical',
+                    closingCard: cards.freedomFlex,
+                    alternatives: [cards.sapphirePreferred, cards.freedomUnlimited, cards.amazonPrime]
+                };
+            }
+            if (day === 21) {
+                return {
+                    type: 'critical',
+                    closingCard: cards.sapphirePreferred,
+                    alternatives: [cards.freedomUnlimited, cards.amazonPrime, cards.freedomFlex]
+                };
+            }
+            if (day === 25) {
+                return {
+                    type: 'critical',
+                    closingCard: cards.freedomUnlimited,
+                    alternatives: [cards.sapphirePreferred, cards.amazonPrime, cards.freedomFlex]
+                };
+            }
+            
+            // Best days for each card
+            if (day >= 26 || day === 1) {
+                return {
+                    type: 'optimal',
+                    primaryCard: cards.freedomUnlimited,
+                    floatDays: 58,
+                    reason: 'Máximo período de float',
+                    alternatives: [cards.sapphirePreferred, cards.amazonPrime]
+                };
+            }
+            
+            if (day >= 22 && day <= 24) {
+                return {
+                    type: 'optimal',
+                    primaryCard: cards.sapphirePreferred,
+                    floatDays: 58,
+                    reason: 'Máximo período de float + 3x puntos en restaurantes/viajes',
+                    alternatives: [cards.freedomUnlimited, cards.amazonPrime]
+                };
+            }
+            
+            if (day >= 3 && day <= 6) {
+                return {
+                    type: 'good',
+                    primaryCard: cards.amazonPrime,
+                    floatDays: 55,
+                    reason: 'Excelente período de float',
+                    alternatives: [cards.sapphirePreferred, cards.freedomFlex]
+                };
+            }
+            
+            if (day >= 8 && day <= 20) {
+                return {
+                    type: 'good',
+                    primaryCard: cards.freedomFlex,
+                    floatDays: 28,
+                    reason: 'Buen período de float',
+                    alternatives: [cards.amazonPrime, cards.sapphirePreferred]
+                };
+            }
+            
+            // Default fallback
+            return {
+                type: 'good',
+                primaryCard: cards.freedomUnlimited,
+                floatDays: 30,
+                reason: 'Opción estándar',
+                alternatives: [cards.sapphirePreferred, cards.amazonPrime]
+            };
+        }
+        
+        function displayResult(recommendation, day, date, amount) {
+            const resultDiv = document.getElementById('result');
+            let html = '';
+            
+            if (recommendation.type === 'critical') {
+                html = `
+                    <div class="warning">
+                        <div class="warning-title">
+                            ⚠️ ¡ADVERTENCIA! Día ${day} - Fecha de Corte
+                        </div>
+                        <p style="font-size: 1.1em; line-height: 1.6;">
+                            El día ${day} cierra el ciclo de <strong>${recommendation.closingCard.name}</strong>. 
+                            Si haces la compra hoy, solo tendrás aproximadamente <strong>25-28 días</strong> 
+                            para pagar antes del vencimiento.
+                        </p>
+                        <div class="info-box" style="margin-top: 15px;">
+                            <strong>💡 Recomendación:</strong> Si puedes, espera hasta mañana para obtener 
+                            hasta 55-58 días de float. Si no puedes esperar, usa una tarjeta alternativa.
+                        </div>
+                    </div>
+                    
+                    <div class="alternatives">
+                        <h3>Alternativas para Hoy (Día ${day}):</h3>
+                        ${recommendation.alternatives.map((card, index) => `
+                            <div class="alt-card">
+                                <div class="alt-card-name">
+                                    ${index + 1}. ${card.name} (${card.number})
+                                </div>
+                                <div style="color: #666; margin-top: 5px;">
+                                    ${card.specialBonus} | Cierra día ${card.closeDay}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                const floatEmoji = recommendation.floatDays >= 50 ? '🌟' : recommendation.floatDays >= 40 ? '✨' : '👍';
+                
+                html = `
+                    <div class="card-recommendation">
+                        <div class="card-name">
+                            ${floatEmoji} ${recommendation.primaryCard.name}
+                        </div>
+                        <div class="card-number">
+                            Terminación: ${recommendation.primaryCard.number}
+                        </div>
+                        <div class="recommendation-reason">
+                            <strong>Por qué esta tarjeta:</strong><br>
+                            ${recommendation.reason}
+                        </div>
+                        <div class="float-info">
+                            <span class="emoji">⏰</span>
+                            <strong>Período de float:</strong> 
+                            <span class="float-days">~${recommendation.floatDays} días</span>
+                            <br>
+                            <span style="color: #666; margin-top: 5px; display: inline-block;">
+                                Tendrás hasta aproximadamente ${formatFutureDate(date, recommendation.floatDays)} para pagar
+                            </span>
+                        </div>
+                        <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px;">
+                            <strong>Beneficios:</strong> ${recommendation.primaryCard.specialBonus}
+                        </div>
+                    </div>
+                `;
+                
+                if (amount) {
+                    const cashback = calculateCashback(recommendation.primaryCard, amount);
+                    html += `
+                        <div class="info-box">
+                            <strong>💰 Cashback estimado:</strong> $${cashback.toFixed(2)} USD
+                            <br>
+                            <span style="font-size: 0.9em; color: #666;">
+                                Basado en ${recommendation.primaryCard.cashback} de cashback base
+                            </span>
+                        </div>
+                    `;
+                }
+                
+                if (recommendation.alternatives && recommendation.alternatives.length > 0) {
+                    html += `
+                        <div class="alternatives">
+                            <h3>Otras opciones para hoy:</h3>
+                            ${recommendation.alternatives.map((card, index) => `
+                                <div class="alt-card">
+                                    <div class="alt-card-name">
+                                        ${card.name} (${card.number})
+                                    </div>
+                                    <div style="color: #666; margin-top: 5px;">
+                                        ${card.specialBonus}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            }
+            
+            resultDiv.innerHTML = html;
+            resultDiv.classList.add('show');
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function calculateCashback(card, amount) {
+            const match = card.cashback.match(/[\d.]+/);
+            if (match) {
+                const percentage = parseFloat(match[0]);
+                return (amount * percentage) / 100;
+            }
+            return 0;
+        }
+        
+        function formatFutureDate(date, days) {
+            const future = new Date(date);
+            future.setDate(future.getDate() + days);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return future.toLocaleDateString('es-ES', options);
+        }
+        
+        // Set today's date as default
+        setDateToToday();
+    </script>
+</body>
+</html>
